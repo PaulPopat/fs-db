@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "deno",
+      "command": "test",
+      "problemMatcher": ["$deno"],
+      "group": "build",
+      "label": "deno: bundle",
+      "args": ["--allow-all", "--import-map=import_map.json"]
+    }
+  ]
+}
