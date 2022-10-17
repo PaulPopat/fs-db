@@ -16,7 +16,7 @@ export type Readify<TState extends State | StateIterator> = {
     : TState[TKey];
 } & {
   [ObjectPath]: string;
-};
+} & Iterable<TState[keyof TState]>;
 
 export type Writify<TState extends State | StateIterator | TypeOption> =
   TState extends State | StateIterator
