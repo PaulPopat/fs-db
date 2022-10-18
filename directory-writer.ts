@@ -1,12 +1,12 @@
-import * as Path from "@path";
 import {
+  Path,
   IsArray,
   IsString,
   IsRecord,
   PatternMatch,
   DoNotCare,
   IsEmpty,
-} from "@type_guard";
+} from "./deps.ts";
 import { Action, Keys, ObjectPath } from "./config.ts";
 import WriteFile from "./file-writer.ts";
 import { IsTypeOption, TypeOption } from "./primitives.ts";

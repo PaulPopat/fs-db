@@ -1,35 +1,12 @@
-import * as Path from "@path";
-import {
-  IsString,
-  IsObject,
-  Checker,
-  IsIntersection,
-  IsRecord,
-  IsUnion,
-  IsFunction,
-  IsKeyOf,
-} from "@type_guard";
+import { Path, IsKeyOf } from "./deps.ts";
 import { ObjectPath } from "./config.ts";
 import ReadFile from "./file-reader.ts";
-import { IsTypeOption, TypeOption } from "./primitives.ts";
+import { TypeOption } from "./primitives.ts";
 
-export interface ObjectDirectory {
+export type ObjectDirectory = Iterable<TypeOption | ObjectDirectory> & {
   [key: string]: TypeOption | ObjectDirectory;
-  [Symbol.iterator]?: () => Iterator<TypeOption | ObjectDirectory>;
   [ObjectPath]: string;
-}
-
-export const IsObjectDirectory = IsIntersection(
-  IsRecord(
-    IsString,
-    (arg, strict = true): arg is TypeOption | ObjectDirectory =>
-      IsUnion(IsTypeOption, IsObjectDirectory)(arg, strict)
-  ),
-  IsObject({
-    [Symbol.iterator]: IsFunction,
-    [ObjectPath]: IsString,
-  })
-) as Checker<ObjectDirectory>;
+};
 
 export default function ReadDirectory(dir: string): ObjectDirectory {
   const exists = (name: string) => {

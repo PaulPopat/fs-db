@@ -11,12 +11,12 @@ type StateIterator = Iterable<TypeOption | State>;
 type FromIterable<T> = T extends Iterable<infer R> ? R : T;
 
 export type Readify<TState extends State | StateIterator> = {
-  [TKey in keyof TState]: TState[TKey] extends State | StateIterator
+  [TKey in keyof TState]: TState[TKey] extends Record<never, never>
     ? Readify<TState[TKey]>
     : TState[TKey];
 } & {
   [ObjectPath]: string;
-};
+} & Iterator<TState[keyof TState]>;
 
 export type Writify<TState extends State | StateIterator | TypeOption> =
   TState extends State | StateIterator

@@ -1,12 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
-import * as Testing from "@testing/asserts.ts";
-import { beforeEach, describe, it } from "@testing/bdd.ts";
+import { Testing, Bdd } from "./testing-deps.ts";
 import CreateState, { Delete, Readify, State } from "./mod.ts";
 
 const DirPath = "./test-data";
 
-describe("init", () => {
-  beforeEach(async () => {
+Bdd.describe("init", () => {
+  Bdd.beforeEach(async () => {
     try {
       await Deno.remove(DirPath, { recursive: true });
     } catch (err) {
@@ -31,12 +30,12 @@ describe("init", () => {
     }
   }
 
-  it("Writes a basic state", async () => {
+  Bdd.it("Writes a basic state", async () => {
     const state = await CreateState(DirPath, { hello: "world" });
     CheckState(state.GetState(), { hello: "world" });
   });
 
-  it("Writes a complex object", async () => {
+  Bdd.it("Writes a complex object", async () => {
     const state = await CreateState(DirPath, {
       hello: { part1: "world1", part2: "world2" },
     });
@@ -45,7 +44,7 @@ describe("init", () => {
     });
   });
 
-  it("Updates an item", async () => {
+  Bdd.it("Updates an item", async () => {
     const state = await CreateState<State>(DirPath, {
       hello: { part1: "world1", part2: "world2" },
     });
@@ -58,7 +57,7 @@ describe("init", () => {
     CheckState(state.GetState(), { hello: { part1: "test", part2: "world2" } });
   });
 
-  it("Deletes a null item", async () => {
+  Bdd.it("Deletes a null item", async () => {
     const state = await CreateState<State>(DirPath, {
       hello: { part1: "world1", part2: "world2" },
     });
@@ -71,7 +70,7 @@ describe("init", () => {
     CheckState(state.GetState(), { hello: { part2: "world2" } });
   });
 
-  it("Deletes an iterable", async () => {
+  Bdd.it("Deletes an iterable", async () => {
     const state = await CreateState(DirPath, {
       a_thing: [{ name: "thing1" }, { name: "thing2" }],
     });

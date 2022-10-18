@@ -1,4 +1,4 @@
-import { IsKeyOf } from "@type_guard";
+import { IsKeyOf } from "./deps.ts";
 import { Delimiter } from "./config.ts";
 import { Handlers, TypeOption } from "./primitives.ts";
 

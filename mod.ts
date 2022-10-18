@@ -1,11 +1,11 @@
 import { Action, Keys, ObjectPath } from "./config.ts";
-import ReadDirectory, { ObjectDirectory } from "./directory-reader.ts";
+import ReadDirectory from "./directory-reader.ts";
 import WriteDirectory, { WriteFunction } from "./directory-writer.ts";
 import { Promised, Readify, State, Writify } from "./types.ts";
-import * as Path from "@path";
+import { Path } from "./deps.ts";
 
-export function Delete<TState extends ObjectDirectory>(
-  item: TState,
+export function Delete<TState extends Record<never, never>>(
+  item: Readify<TState>,
   keys?: (keyof TState)[]
 ): WriteFunction {
   return {

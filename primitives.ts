@@ -9,7 +9,7 @@ import {
   Optional,
   Checker,
   IsUnion,
-} from "@type_guard";
+} from "./deps.ts";
 import { Keys } from "./utilts.ts";
 
 function BuildHandler<T>(
