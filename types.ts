@@ -1,30 +1,20 @@
 import { ObjectPath } from "./config.ts";
-import { WriteFunction } from "./directory-writer.ts";
 import { TypeOption } from "./primitives.ts";
 
+export type StatePart = TypeOption | State;
+
 export type State = {
-  [key: string]: TypeOption | State | StateIterator | undefined | null;
+  [key: string]: StatePart;
 };
 
-type StateIterator = Iterable<TypeOption | State>;
-
-type FromIterable<T> = T extends Iterable<infer R> ? R : T;
-
-export type Readify<TState extends State | StateIterator> = {
-  [TKey in keyof TState]: TState[TKey] extends Record<never, never>
-    ? Readify<TState[TKey]>
-    : TState[TKey];
-} & {
-  [ObjectPath]: string;
-} & Iterator<TState[keyof TState]>;
-
-export type Writify<TState extends State | StateIterator | TypeOption> =
-  TState extends State | StateIterator
-    ?
-        | (TState extends State
-            ? { [TKey in keyof TState]?: Writify<TState[TKey]> }
-            : Iterable<Writify<FromIterable<TState>>>)
-        | WriteFunction
-    : TState;
+export type Readify<TState extends StatePart> = TState extends TypeOption
+  ? TState
+  : TState extends State
+  ? {
+      [TKey in keyof TState]: Readify<TState[TKey]>;
+    } & {
+      [ObjectPath]: string;
+    } & Iterable<[keyof TState, TState[keyof TState]]>
+  : never;
 
 export type Promised<T> = T extends Promise<infer R> ? R : T;

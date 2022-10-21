@@ -1,14 +1,11 @@
 import { Path, IsKeyOf } from "./deps.ts";
 import { ObjectPath } from "./config.ts";
 import ReadFile from "./file-reader.ts";
-import { TypeOption } from "./primitives.ts";
+import { Readify, State } from "./types.ts";
 
-export type ObjectDirectory = Iterable<TypeOption | ObjectDirectory> & {
-  [key: string]: TypeOption | ObjectDirectory;
-  [ObjectPath]: string;
-};
-
-export default function ReadDirectory(dir: string): ObjectDirectory {
+export default function ReadDirectory<TState extends State>(
+  dir: string
+): Readify<TState> {
   const exists = (name: string) => {
     try {
       const target = Path.join(dir, name.toString());
@@ -32,10 +29,12 @@ export default function ReadDirectory(dir: string): ObjectDirectory {
     }
   };
 
-  return new Proxy<ObjectDirectory>(
+  // deno-lint-ignore no-explicit-any
+  return new Proxy<any>(
     {
       [Symbol.iterator]: function* () {
-        for (const item of Deno.readDirSync(dir)) yield getter(item.name);
+        for (const item of Deno.readDirSync(dir))
+          yield [item.name, getter(item.name)];
       },
       [ObjectPath]: dir,
     },
@@ -54,7 +53,7 @@ export default function ReadDirectory(dir: string): ObjectDirectory {
       },
       get(original, name) {
         if (IsKeyOf(original, name)) return original[name];
-        return getter(name.toString());
+        return getter((name as string).toString());
       },
       getOwnPropertyDescriptor(_, name) {
         try {

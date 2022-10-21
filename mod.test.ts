@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { Testing, Bdd } from "./testing-deps.ts";
-import CreateState, { Delete, Readify, State } from "./mod.ts";
+import CreateState, { Readify, State } from "./mod.ts";
 
 const DirPath = "./test-data";
 
@@ -13,10 +13,7 @@ Bdd.describe("init", () => {
     }
   });
 
-  function CheckState<TState extends State>(
-    state: Readify<TState>,
-    value: TState
-  ) {
+  function CheckState(state: Readify<any>, value: any) {
     for (const item in value) {
       const subject = state[item];
       const expected = value[item];
@@ -68,19 +65,5 @@ Bdd.describe("init", () => {
     });
 
     CheckState(state.GetState(), { hello: { part2: "world2" } });
-  });
-
-  Bdd.it("Deletes an iterable", async () => {
-    const state = await CreateState(DirPath, {
-      a_thing: [{ name: "thing1" }, { name: "thing2" }],
-    });
-    for (const item of state.GetState().a_thing) {
-      await state.SetState({
-        a_thing: [Delete(item)],
-      });
-      break;
-    }
-
-    CheckState(state.GetState(), { a_thing: [{ name: "thing2" }] });
   });
 });

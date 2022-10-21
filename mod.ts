@@ -1,23 +1,12 @@
-import { Action, Keys, ObjectPath } from "./config.ts";
 import ReadDirectory from "./directory-reader.ts";
-import WriteDirectory, { WriteFunction } from "./directory-writer.ts";
-import { Promised, Readify, State, Writify } from "./types.ts";
+import WriteDirectory from "./directory-writer.ts";
+import { Promised, Readify, State } from "./types.ts";
 import { Path } from "./deps.ts";
-
-export function Delete<TState extends Record<never, never>>(
-  item: Readify<TState>,
-  keys?: (keyof TState)[]
-): WriteFunction {
-  return {
-    [ObjectPath]: item[ObjectPath],
-    [Action]: "delete" as const,
-    [Keys]: keys ?? [],
-  };
-}
+import Mock from "./mock-directory.ts";
 
 export default async function CreateState<TState extends State>(
   dir: string,
-  init: Writify<TState>
+  init: TState
 ) {
   dir = Path.join(dir);
 
@@ -35,16 +24,14 @@ export default async function CreateState<TState extends State>(
   }
 
   return {
-    GetState(): Readify<TState> {
-      /*
-       We cast to any because we can guarentee the quality of the state.
-       This is because it can only be got and set from within this ecosystem.
-      */
-      // deno-lint-ignore no-explicit-any
-      return ReadDirectory(dir) as any;
+    GetState() {
+      return ReadDirectory<TState>(dir);
     },
-    async SetState(value: Writify<TState>) {
+    async SetState(value: Partial<TState>) {
       await WriteDirectory(dir, value);
+    },
+    Mock(data: TState) {
+      return Mock(data);
     },
   };
 }
@@ -53,4 +40,5 @@ export type StateManager<TState extends State> = Promised<
   ReturnType<typeof CreateState<TState>>
 >;
 
-export type { State, Writify, Readify };
+export type { State, Readify };
+export type { StatePart } from "./types.ts";

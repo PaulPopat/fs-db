@@ -1,43 +1,19 @@
 import {
   Path,
-  IsArray,
   IsString,
   IsRecord,
   PatternMatch,
   DoNotCare,
   IsEmpty,
 } from "./deps.ts";
-import { Action, Keys, ObjectPath } from "./config.ts";
 import WriteFile from "./file-writer.ts";
-import { IsTypeOption, TypeOption } from "./primitives.ts";
+import { IsTypeOption } from "./primitives.ts";
+import { State } from "./types.ts";
 
-export type WriteFunction = {
-  [ObjectPath]: string;
-  [Action]: "delete";
-  [Keys]: Array<string | number | symbol>;
-};
-
-type BaseWriteItem =
-  | WriteFunction
-  | TypeOption
-  | WriteObject
-  | undefined
-  | null;
-
-type WriteItem = BaseWriteItem | BaseWriteItem[];
-
-type WriteObject = {
-  [key: string]: WriteItem;
-};
-
-const IsWriteFunction = (arg: unknown): arg is WriteFunction =>
-  !!arg &&
-  typeof arg === "object" &&
-  Action in arg &&
-  Keys in arg &&
-  ObjectPath in arg;
-
-export default async function WriteDirectory(dir: string, data: unknown) {
+export default async function WriteDirectory<TState extends State>(
+  dir: string,
+  data: TState
+) {
   const mkdir = async () => {
     try {
       await Deno.mkdir(dir);
@@ -55,29 +31,16 @@ export default async function WriteDirectory(dir: string, data: unknown) {
   };
 
   await PatternMatch(
-    IsWriteFunction,
     IsTypeOption,
-    IsArray(DoNotCare),
     IsRecord(IsString, DoNotCare),
     IsEmpty,
     DoNotCare
   )(
-    async (data) => {
-      if (data[Keys].length)
-        for (const key of data[Keys])
-          await remove(Path.join(data[ObjectPath], key.toString()));
-      else await remove(data[ObjectPath]);
-    },
     async (primitive) => await WriteFile(dir, primitive),
-    async (array_data) => {
-      await mkdir();
-      for (const item of array_data)
-        await WriteDirectory(Path.join(dir, crypto.randomUUID()), item);
-    },
     async (data) => {
       await mkdir();
       for (const key in data)
-        await WriteDirectory(Path.join(dir, key), data[key]);
+        await WriteDirectory(Path.join(dir, key), data[key] as State);
     },
     async () => await remove(dir),
     () => {
