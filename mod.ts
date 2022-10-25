@@ -2,7 +2,6 @@ import ReadDirectory from "./directory-reader.ts";
 import WriteDirectory from "./directory-writer.ts";
 import { Promised, Readify, State } from "./types.ts";
 import { Path } from "./deps.ts";
-import Mock from "./mock-directory.ts";
 
 export default async function CreateState<TState extends State>(
   dir: string,
@@ -30,9 +29,6 @@ export default async function CreateState<TState extends State>(
     async SetState(value: Partial<TState>) {
       await WriteDirectory(dir, value);
     },
-    Mock(data: TState) {
-      return Mock(data);
-    },
   };
 }
 
@@ -42,3 +38,4 @@ export type StateManager<TState extends State> = Promised<
 
 export type { State, Readify };
 export type { StatePart } from "./types.ts";
+export { default as Mock } from "./mock-directory.ts";
