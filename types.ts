@@ -14,7 +14,7 @@ export type Readify<TState extends StatePart> = TState extends TypeOption
       [TKey in keyof TState]: Readify<TState[TKey]>;
     } & {
       [ObjectPath]: string;
-    } & Iterable<[keyof TState, TState[keyof TState]]>
+    } & Iterable<[keyof TState, Readify<TState[keyof TState]>]>
   : never;
 
 export type Promised<T> = T extends Promise<infer R> ? R : T;

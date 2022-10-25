@@ -66,4 +66,15 @@ Bdd.describe("init", () => {
 
     CheckState(state.GetState(), { hello: { part2: "world2" } });
   });
+
+  Bdd.it("Compiles state types", async () => {
+    const manager = await CreateState<State>(DirPath, {
+      hello: { part1: "world1", part2: "world2" },
+    });
+
+    const state: Readify<State> = manager.GetState();
+    CheckState(state, {
+      hello: { part1: "world1", part2: "world2" },
+    });
+  });
 });
