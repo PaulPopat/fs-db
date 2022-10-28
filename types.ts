@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { ObjectPath } from "./config.ts";
 import { TypeOption } from "./primitives.ts";
 
@@ -18,3 +19,9 @@ export type Readify<TState extends StatePart> = TState extends TypeOption
   : never;
 
 export type Promised<T> = T extends Promise<infer R> ? R : T;
+
+export type DeepPartial<T> = T extends Record<any, any>
+  ? {
+      [TKey in keyof T]?: T[TKey];
+    }
+  : T;
