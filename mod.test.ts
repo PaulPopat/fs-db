@@ -77,4 +77,14 @@ Bdd.describe("init", () => {
       hello: { part1: "world1", part2: "world2" },
     });
   });
+
+  Bdd.it("Saves arrays", async () => {
+    const manager = await CreateState(DirPath, {
+      test: new Uint8Array([0, 1, 2, 3]),
+    });
+
+    CheckState(manager.GetState(), {
+      test: new Uint8Array([0, 1, 2, 3]),
+    });
+  });
 });

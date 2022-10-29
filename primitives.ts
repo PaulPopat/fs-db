@@ -10,6 +10,7 @@ import {
   Checker,
   IsUnion,
 } from "./deps.ts";
+import { Decode, Encode } from "./text.ts";
 import { Keys } from "./utilts.ts";
 
 function BuildHandler<T>(
@@ -50,6 +51,11 @@ export const Handlers = {
     IsDate,
     (d) => d.getTime().toString(),
     (v) => new Date(parseInt(v))
+  ),
+  uint8array: BuildHandler(
+    (a: unknown): a is Uint8Array => a instanceof Uint8Array,
+    (a) => Decode(a),
+    (v) => Encode(v)
   ),
 };
 

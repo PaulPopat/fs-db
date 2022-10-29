@@ -39,3 +39,5 @@ export type StateManager<TState extends State> = Promised<
 export type { State, Readify };
 export type { StatePart, DeepPartial } from "./types.ts";
 export { default as Mock } from "./mock-directory.ts";
+export { Unpack, UnpackWithoutId, UnpackObject, Pack } from "./export-utils.ts";
+export type { Idd } from "./export-utils.ts"
