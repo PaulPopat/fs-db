@@ -3,6 +3,23 @@ import WriteDirectory from "./directory-writer.ts";
 import { DeepPartial, Promised, Readify, State } from "./types.ts";
 import { Path } from "./deps.ts";
 
+async function DirExists(path: string) {
+  try {
+    const stats = await Deno.stat(path);
+    return stats.isDirectory;
+  } catch (err) {
+    if (err instanceof Deno.errors.NotFound) return false;
+    throw err;
+  }
+}
+
+async function ShouldInit(dir: string) {
+  if (!(await DirExists(dir))) return true;
+  for await (const _ of Deno.readDir(dir)) return false;
+
+  return true;
+}
+
 export default async function CreateState<TState extends State>(
   dir: string,
   init: TState
@@ -14,13 +31,7 @@ export default async function CreateState<TState extends State>(
     await WriteDirectory(dir, init);
   };
 
-  try {
-    const stats = await Deno.stat(dir);
-    if (!stats.isDirectory) await initialise();
-  } catch (err) {
-    if (!(err instanceof Deno.errors.NotFound)) throw err;
-    await initialise();
-  }
+  if (!(await ShouldInit(dir))) await initialise();
 
   return {
     GetState() {
@@ -40,4 +51,4 @@ export type { State, Readify };
 export type { StatePart, DeepPartial } from "./types.ts";
 export { default as Mock } from "./mock-directory.ts";
 export { Unpack, UnpackWithoutId, UnpackObject, Pack } from "./export-utils.ts";
-export type { Idd } from "./export-utils.ts"
+export type { Idd } from "./export-utils.ts";
