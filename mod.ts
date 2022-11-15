@@ -17,6 +17,7 @@ async function ShouldInit(dir: string) {
   if (!(await DirExists(dir))) return true;
   for await (const _ of Deno.readDir(dir)) return false;
 
+  console.log("Iterated everything");
   return true;
 }
 
@@ -31,7 +32,7 @@ export default async function CreateState<TState extends State>(
     await WriteDirectory(dir, init);
   };
 
-  if (!(await ShouldInit(dir))) await initialise();
+  if (await ShouldInit(dir)) await initialise();
 
   return {
     GetState() {

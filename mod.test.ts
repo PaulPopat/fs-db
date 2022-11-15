@@ -17,13 +17,8 @@ Bdd.describe("init", () => {
     for (const item in value) {
       const subject = state[item];
       const expected = value[item];
-      let index = 0;
-      if (Array.isArray(expected))
-        for (const item of subject as Iterable<any>)
-          CheckState(item, expected[index++]);
-      else if (typeof expected === "object")
-        CheckState(subject as any, expected as any);
-      else Testing.assertEquals(subject, expected as any);
+      if (typeof expected === "object") CheckState(subject, expected);
+      else Testing.assertEquals(subject, expected);
     }
   }
 
@@ -78,13 +73,23 @@ Bdd.describe("init", () => {
     });
   });
 
-  Bdd.it("Saves arrays", async () => {
+  Bdd.it("Does not init twice", async () => {
     const manager = await CreateState(DirPath, {
-      test: new Uint8Array([0, 1, 2, 3]),
+      test: {
+        t1: "Hello",
+      },
+    });
+
+    await CreateState(DirPath, {
+      test: {
+        t2: "Hello",
+      },
     });
 
     CheckState(manager.GetState(), {
-      test: new Uint8Array([0, 1, 2, 3]),
+      test: {
+        t1: "Hello",
+      },
     });
   });
 });
