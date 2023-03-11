@@ -1,95 +1,93 @@
-// deno-lint-ignore-file no-explicit-any
-import { Testing, Bdd } from "./testing-deps.ts";
-import CreateState, { Readify, State } from "./mod.ts";
+import { assertEquals } from "https://deno.land/std@0.165.0/testing/asserts.ts";
+import { ASCII, Struct } from "./deps.ts";
+import { Directory, Schema } from "./mod.ts";
 
-const DirPath = "./test-data";
+const TEST_DIR = "./test-data";
 
-Bdd.describe("init", () => {
-  Bdd.beforeEach(async () => {
+function Test<T extends Schema>(
+  name: string,
+  init: T,
+  handler: (dir: Directory<T>) => void
+) {
+  Deno.test(name, () => {
     try {
-      await Deno.remove(DirPath, { recursive: true });
-    } catch (err) {
-      if (!(err instanceof Deno.errors.NotFound)) throw err;
+      Deno.removeSync(TEST_DIR, { recursive: true });
+    } catch {
+      // We do not care if the directory does not exist
     }
-  });
 
-  function CheckState(state: Readify<any>, value: any) {
-    for (const item in value) {
-      const subject = state[item];
-      const expected = value[item];
-      if (typeof expected === "object") CheckState(subject, expected);
-      else Testing.assertEquals(subject, expected);
+    const db = new Directory(init, TEST_DIR);
+
+    handler(db);
+  });
+}
+
+Test(
+  "Creates a basic state",
+  {
+    item_1: new Struct({
+      an_item: new ASCII(),
+    }),
+  },
+  (dir) => {
+    dir.Write({
+      item_1: {
+        test_id: {
+          an_item: "Hello world",
+        },
+      },
+    });
+
+    assertEquals(dir.Model.item_1.test_id, { an_item: "Hello world" });
+  }
+);
+
+Test(
+  "Can iterate over state",
+  {
+    item_1: new Struct({
+      an_item: new ASCII(),
+    }),
+  },
+  (dir) => {
+    dir.Write({
+      item_1: {
+        test_id_1: {
+          an_item: "This is the first item",
+        },
+        test_id_2: {
+          an_item: "This is the second item",
+        },
+        test_id_3: {
+          an_item: "This is the third item",
+        },
+        test_id_4: {
+          an_item: "This is the fourth item",
+        },
+      },
+    });
+
+    let i = 0;
+    for (const [key, value] of dir.Model.item_1) {
+      i++;
+      switch (i) {
+        case 1:
+          assertEquals(key, "test_id_1");
+          assertEquals(value, { an_item: "This is the first item" });
+          break;
+        case 2:
+          assertEquals(key, "test_id_2");
+          assertEquals(value, { an_item: "This is the second item" });
+          break;
+        case 3:
+          assertEquals(key, "test_id_3");
+          assertEquals(value, { an_item: "This is the third item" });
+          break;
+        case 4:
+          assertEquals(key, "test_id_4");
+          assertEquals(value, { an_item: "This is the fourth item" });
+          break;
+      }
     }
   }
-
-  Bdd.it("Writes a basic state", async () => {
-    const state = await CreateState(DirPath, { hello: "world" });
-    CheckState(state.GetState(), { hello: "world" });
-  });
-
-  Bdd.it("Writes a complex object", async () => {
-    const state = await CreateState(DirPath, {
-      hello: { part1: "world1", part2: "world2" },
-    });
-    CheckState(state.GetState(), {
-      hello: { part1: "world1", part2: "world2" },
-    });
-  });
-
-  Bdd.it("Updates an item", async () => {
-    const state = await CreateState<State>(DirPath, {
-      hello: { part1: "world1", part2: "world2" },
-    });
-    await state.SetState({
-      hello: {
-        part1: "test",
-      },
-    });
-
-    CheckState(state.GetState(), { hello: { part1: "test", part2: "world2" } });
-  });
-
-  Bdd.it("Deletes a null item", async () => {
-    const state = await CreateState<State>(DirPath, {
-      hello: { part1: "world1", part2: "world2" },
-    });
-    await state.SetState({
-      hello: {
-        part1: null,
-      },
-    });
-
-    CheckState(state.GetState(), { hello: { part2: "world2" } });
-  });
-
-  Bdd.it("Compiles state types", async () => {
-    const manager = await CreateState<State>(DirPath, {
-      hello: { part1: "world1", part2: "world2" },
-    });
-
-    const state: Readify<State> = manager.GetState();
-    CheckState(state, {
-      hello: { part1: "world1", part2: "world2" },
-    });
-  });
-
-  Bdd.it("Does not init twice", async () => {
-    const manager = await CreateState(DirPath, {
-      test: {
-        t1: "Hello",
-      },
-    });
-
-    await CreateState(DirPath, {
-      test: {
-        t2: "Hello",
-      },
-    });
-
-    CheckState(manager.GetState(), {
-      test: {
-        t1: "Hello",
-      },
-    });
-  });
-});
+);
