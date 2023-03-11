@@ -6,3 +6,5 @@ export type {
 } from "./i-directory.ts";
 
 export { default as Directory } from "./directory.ts";
+
+export { default as MockedDirectory } from "./mocked-directory.ts";
