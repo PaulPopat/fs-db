@@ -28,10 +28,10 @@ export default class Directory<TSchema extends Schema>
     }
   }
 
-  #read_dir(key: string, sub_key: string) {
+  #read_file(key: string, sub_key: string) {
     const path = this.#join(key, sub_key);
 
-    if (!this.#exists(path)) return {};
+    if (!this.#exists(path)) return undefined;
 
     const data = Deno.readFileSync(path);
     return Read(this.#schema[key], new Buffer(data));
@@ -43,17 +43,16 @@ export default class Directory<TSchema extends Schema>
     for (const key in this.#schema)
       Object.defineProperty(result, key, {
         get: () => {
-          if (!this.#exists(this.#join(key))) return {};
           // deno-lint-ignore no-this-alias
           const self = this;
           // deno-lint-ignore no-explicit-any
           return new Proxy<any>(
             {
               [Symbol.iterator]: function* () {
-                if (self.#exists(self.#join(key))) return;
+                if (!self.#exists(self.#join(key))) return;
 
                 for (const sub_key of Deno.readDirSync(self.#join(key))) {
-                  yield [sub_key, self.#read_dir(key, sub_key.name)];
+                  yield [sub_key, self.#read_file(key, sub_key.name)];
                 }
               },
             },
@@ -76,21 +75,21 @@ export default class Directory<TSchema extends Schema>
                 if (typeof sub_key !== "string")
                   throw new Error("Symbols are not allowed on state");
 
-                return this.#read_dir(key, sub_key);
+                return this.#read_file(key, sub_key);
               },
               getOwnPropertyDescriptor: (_, sub_key) => {
                 if (typeof sub_key !== "string")
                   throw new Error("Symbols are not allowed on state");
 
                 try {
-                  const value = this.#read_dir(key, sub_key);
+                  const value = this.#read_file(key, sub_key);
                   return {
                     configurable: false,
                     enumerable: !!value,
                     writable: false,
                     value: value,
                     get: () => {
-                      return this.#read_dir(key, sub_key);
+                      return this.#read_file(key, sub_key);
                     },
                     set() {
                       throw new Error("The state is immutable");
