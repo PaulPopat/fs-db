@@ -43,6 +43,7 @@ export default class Directory<TSchema extends Schema>
     for (const key in this.#schema)
       Object.defineProperty(result, key, {
         get: () => {
+          if (!this.#exists(this.#join(key))) return {};
           // deno-lint-ignore no-this-alias
           const self = this;
           // deno-lint-ignore no-explicit-any
