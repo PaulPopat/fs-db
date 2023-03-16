@@ -1,4 +1,4 @@
-import { Read, Write, Path, Buffer } from "./deps.ts";
+import { MT, Path, Buffer } from "./deps.ts";
 import IDirectory, { Schema, StateReader, StateWriter } from "./i-directory.ts";
 
 export default class Directory<TSchema extends Schema>
@@ -34,7 +34,7 @@ export default class Directory<TSchema extends Schema>
     if (!this.#exists(path)) return undefined;
 
     const data = Deno.readFileSync(path);
-    return Read(this.#schema[key], new Buffer(data));
+    return MT.Read(this.#schema[key], new Buffer(data));
   }
 
   get Model(): StateReader<TSchema> {
@@ -142,7 +142,7 @@ export default class Directory<TSchema extends Schema>
         for (const part in item)
           Deno.writeFileSync(
             this.#join(key, part),
-            Write(this.#schema[key], item[part]).bytes()
+            MT.Write(this.#schema[key], item[part]).bytes()
           );
     }
   }
