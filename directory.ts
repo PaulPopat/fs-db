@@ -11,7 +11,8 @@ export default class Directory<TSchema extends Schema>
     this.#schema = schema;
     this.#dir = dir;
 
-    if (!this.#exists(this.#join())) Deno.mkdirSync(this.#join());
+    if (!this.#exists(this.#join()))
+      Deno.mkdirSync(this.#join(), { recursive: true });
   }
 
   #join(...parts: string[]) {
@@ -135,7 +136,8 @@ export default class Directory<TSchema extends Schema>
 
   Write(data: StateWriter<TSchema>) {
     for (const key in this.#schema) {
-      if (!this.#exists(this.#join(key))) Deno.mkdirSync(this.#join(key));
+      if (!this.#exists(this.#join(key)))
+        Deno.mkdirSync(this.#join(key), { recursive: true });
 
       const item = data[key];
       if (item)
