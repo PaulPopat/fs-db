@@ -53,7 +53,7 @@ export default class Directory<TSchema extends Schema>
                 if (!self.#exists(self.#join(key))) return;
 
                 for (const sub_key of Deno.readDirSync(self.#join(key))) {
-                  yield [sub_key, self.#read_file(key, sub_key.name)];
+                  yield [sub_key.name, self.#read_file(key, sub_key.name)];
                 }
               },
             },
