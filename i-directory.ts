@@ -3,7 +3,10 @@ import { MT } from "./deps.ts";
 export type Schema = Record<string, MT.ISerialiseable<unknown>>;
 
 export type StateWriter<TSchema extends Schema> = Partial<{
-  [TKey in keyof TSchema]: Record<string, MT.Serialised<TSchema[TKey]>>;
+  [TKey in keyof TSchema]: Record<
+    string,
+    MT.Serialised<TSchema[TKey]> | undefined
+  >;
 }>;
 
 export type StateReader<TSchema extends Schema> = {

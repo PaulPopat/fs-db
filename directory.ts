@@ -142,10 +142,13 @@ export default class Directory<TSchema extends Schema>
       const item = data[key];
       if (item)
         for (const part in item)
-          Deno.writeFileSync(
-            this.#join(key, part),
-            MT.Write(this.#schema[key], item[part]).bytes()
-          );
+          if (item[part])
+            Deno.writeFileSync(
+              this.#join(key, part),
+              MT.Write(this.#schema[key], item[part]).bytes()
+            );
+          else if (this.#exists(this.#join(key, part)))
+            Deno.removeSync(this.#join(key, part));
     }
   }
 }
